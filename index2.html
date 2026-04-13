@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Pokédex</title>
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      background: #f0f0f0;
+    }
+
+    #logo {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 60px;
+    }
+
+    h1 {
+      margin-top: 60px;
+    }
+
+    .pokebola {
+      width: 30px;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    input {
+      padding: 10px;
+      width: 300px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    #sugestoes {
+      background: white;
+      width: 300px;
+      margin: auto;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .item {
+      padding: 10px;
+      cursor: pointer;
+    }
+
+    .item:hover {
+      background: #eee;
+    }
+
+    #resultado {
+      margin-top: 20px;
+      background: white;
+      display: inline-block;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    img {
+      width: 150px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LOGO -->
+  <img src="pokedex.png" id="logo">
+
+  <h1>🔍 Pokédex</h1>
+
+  <input type="text" id="busca" placeholder="Digite o nome..." oninput="buscarSugestoes()">
+  <div id="sugestoes"></div>
+
+  <div id="resultado"></div>
+
+  <script>
+    let listaPokemons = [];
+
+    const tiposPT = {
+      fire: { nome: "Fogo", emoji: "🔥" },
+      water: { nome: "Água", emoji: "💧" },
+      grass: { nome: "Planta", emoji: "🌿" },
+      electric: { nome: "Elétrico", emoji: "⚡" },
+      ice: { nome: "Gelo", emoji: "❄️" },
+      fighting: { nome: "Lutador", emoji: "🥊" },
+      poison: { nome: "Veneno", emoji: "☠️" },
+      ground: { nome: "Terra", emoji: "🌍" },
+      flying: { nome: "Voador", emoji: "🕊️" },
+      psychic: { nome: "Psíquico", emoji: "🔮" },
+      bug: { nome: "Inseto", emoji: "🐛" },
+      rock: { nome: "Pedra", emoji: "🪨" },
+      ghost: { nome: "Fantasma", emoji: "👻" },
+      dragon: { nome: "Dragão", emoji: "🐉" },
+      dark: { nome: "Sombrio", emoji: "🌑" },
+      steel: { nome: "Aço", emoji: "⚙️" },
+      fairy: { nome: "Fada", emoji: "✨" },
+      normal: { nome: "Normal", emoji: "⚪" }
+    };
+
+    async function carregarLista() {
+      const res = await fetch("https://pokeapi.co/api/v2/pokemon?limit=1000");
+      const data = await res.json();
+      listaPokemons = data.results;
+    }
+
+    carregarLista();
+
+    function buscarSugestoes() {
+      const valor = document.getElementById("busca").value.toLowerCase();
+      const sugestoesDiv = document.getElementById("sugestoes");
+
+      sugestoesDiv.innerHTML = "";
+
+      if (valor.length === 0) return;
+
+      const filtrados = listaPokemons
+        .filter(p => p.name.includes(valor))
+        .slice(0, 10);
+
+      filtrados.forEach(pokemon => {
+        const div = document.createElement("div");
+        div.classList.add("item");
+        div.innerText = pokemon.name;
+
+        div.onclick = () => selecionarPokemon(pokemon.name);
+
+        sugestoesDiv.appendChild(div);
+      });
+    }
+
+    async function selecionarPokemon(nome) {
+      document.getElementById("sugestoes").innerHTML = "";
+
+      try {
+        const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${nome}`);
+        const data = await res.json();
+
+        const especieRes = await fetch(data.species.url);
+        const especie = await especieRes.json();
+
+        const nomePT = especie.names.find(n => n.language.name === "pt")?.name || data.name;
+
+        const numero = `#${data.id.toString().padStart(3, '0')}`;
+
+        // 🔥 ESCOLHA DA POKEBOLA
+        let imagemBola = "pokebola.png"; // Pokébola comum
+
+        if (data.id >= 150) {
+          imagemBola = "masterball.png"; // Master Ball
+        } else if (data.id >= 100) {
+          imagemBola = "ultraball.png"; // Ultra Ball
+        } else if (data.id >= 50) {
+          imagemBola = "greatball.png"; // Great Ball
+        } else {
+          imagemBola = "pokebola.png"; // Pokébola comum
+        }
+
+        const tiposFormatados = data.types.map(t => {
+          const tipo = tiposPT[t.type.name];
+          return tipo ? `${tipo.emoji} ${tipo.nome}` : t.type.name;
+        }).join(", ");
+
+        const pesoKg = data.weight / 10;
+        const alturaCm = data.height * 10;
+
+        document.getElementById("resultado").innerHTML = `
+          <h2>
+            <img src="${imagemBola}" class="pokebola">
+            ${numero} - ${nomePT}
+          </h2>
+
+          <img src="${data.sprites.front_default}" />
+
+          <p><strong>Tipo:</strong> ${tiposFormatados}</p>
+
+          <p>❤️ <strong>HP:</strong> ${data.stats[0].base_stat}</p>
+          <p>⚔️ <strong>Ataque:</strong> ${data.stats[1].base_stat}</p>
+          <p>🛡️ <strong>Defesa:</strong> ${data.stats[2].base_stat}</p>
+
+          <p>⚖️ <strong>Peso:</strong> ${pesoKg} kg</p>
+          <p>📏 <strong>Altura:</strong> ${alturaCm} cm</p>
+        `;
+      } catch {
+        document.getElementById("resultado").innerHTML = "❌ Pokémon não encontrado!";
+      }
+    }
+  </script>
+
+</body>
+</html>
