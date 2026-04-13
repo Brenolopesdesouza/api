@@ -1652,7 +1652,7 @@
               ${paginaAtual <= 0 ? "disabled" : ""}
               aria-label="Página anterior das cartas"
             >
-              ←
+              ▶
             </button>
             <span class="paginacao-tcg-info">Página ${paginaAtual + 1} de ${Math.max(1, Math.ceil(totalCartas / 6))}</span>
             <button
@@ -1662,7 +1662,7 @@
               ${paginaAtual >= Math.ceil(totalCartas / 6) - 1 ? "disabled" : ""}
               aria-label="Próxima página das cartas"
             >
-              →
+              ▶
             </button>
           </div>
         </div>
@@ -2006,7 +2006,7 @@
               ${indiceNavegacaoAtual <= 0 ? "disabled" : ""}
               aria-label="Evolução anterior"
             >
-              ←
+              ▶
             </button>
 
             <h2>${numero} - ${nomeExibicao}</h2>
@@ -2018,7 +2018,7 @@
               ${indiceNavegacaoAtual === -1 || indiceNavegacaoAtual >= navegacaoAtual.length - 1 ? "disabled" : ""}
               aria-label="Próxima evolução"
             >
-              →
+              ▶
             </button>
           </div>
 
@@ -2469,7 +2469,7 @@
               onclick="navegarPaginaPacote(-1)"
               ${paginaAtual <= 0 ? "disabled" : ""}
             >
-              ←
+              ▶
             </button>
             <span class="paginacao-tcg-info">Página ${paginaAtual + 1} de ${Math.max(1, totalPaginas)}</span>
             <button
@@ -2478,7 +2478,7 @@
               onclick="navegarPaginaPacote(1)"
               ${paginaAtual >= totalPaginas - 1 ? "disabled" : ""}
             >
-              →
+              ▶
             </button>
           </div>
         </div>
