@@ -73,6 +73,9 @@
       subtipo: "",
       especial: ""
     };
+    let tcgCartasCarregadas = false;
+    let tcgCarregando = false;
+    let tcgErroAoCarregar = false;
     let estadoPacoteTcgAtual = null;
     let listaPokemonsBusca = [];
     let debounceBuscaTimer = null;
@@ -230,6 +233,7 @@
           possuiVersaoPt: Boolean(cartaPt),
           tipos: normalizarTiposTcg([...(cartaPt?.types || []), ...(cartaEn.types || [])]),
           subtipos: cartaPt?.subtypes || cartaEn.subtypes || [],
+          regras: [...(cartaPt?.rules || []), ...(cartaEn.rules || [])],
           categoria: cartaPt?.category || cartaEn.category || "",
           variantes: cartaPt?.variants || cartaEn.variants || {},
           imagemSmallPt: montarUrlImagemTcg(cartaPt?.image, "low"),
@@ -1223,10 +1227,10 @@
       const campos = [
         carta.nomePt,
         carta.nomeEn,
-        carta.setPt,
-        carta.setEn,
         carta.raridadePt,
-        carta.raridadeEn
+        carta.raridadeEn,
+        ...(carta.subtipos || []),
+        ...(carta.regras || [])
       ]
         .filter(Boolean)
         .map(valor => normalizarNomeComparacao(valor));
@@ -1236,7 +1240,6 @@
         "shining",
         "radiant",
         "shiny vault",
-        "fates",
         "brilhante",
         "radiante",
         "cromatico"
@@ -1246,10 +1249,7 @@
     }
 
     function cartaEhEspecialVisualTcg(carta) {
-      return cartaEhEspecialShinyTcg(carta)
-        || Boolean(carta.variantes?.holo)
-        || Boolean(carta.variantes?.reverse)
-        || Boolean(carta.variantes?.firstEdition);
+      return cartaEhEspecialShinyTcg(carta);
     }
 
     function atualizarCartasPokemonPorShiny() {
@@ -1263,9 +1263,7 @@
       if (!spriteAtualShiny) {
         cartasTcgFiltradasAtuais = cartasTcgAtuais;
       } else {
-        const cartasShiny = cartasTcgAtuais.filter(cartaEhEspecialShinyTcg);
-        const cartasEspeciais = cartasTcgAtuais.filter(cartaEhEspecialVisualTcg);
-        cartasTcgFiltradasAtuais = cartasShiny.length > 0 ? cartasShiny : (cartasEspeciais.length > 0 ? cartasEspeciais : cartasTcgAtuais);
+        cartasTcgFiltradasAtuais = cartasTcgAtuais.filter(cartaEhEspecialShinyTcg);
       }
 
       paginaTcgAtual = 0;
@@ -1465,6 +1463,9 @@
         const payload = serializarPayloadHtml(carta);
         const imagemPrincipal = carta.imagemSmallPt || carta.imagemSmallEn || carta.imagemLargePt || carta.imagemLargeEn;
         const imagemFallback = carta.imagemSmallPtPng || carta.imagemSmallEnPng || carta.imagemLargePtPng || carta.imagemLargeEnPng;
+        const seloShiny = cartaEhEspecialShinyTcg(carta)
+          ? `<span class="carta-tcg-selo" aria-label="Carta shiny">★</span>`
+          : "";
 
         return `
           <button
@@ -1483,6 +1484,7 @@
               onerror="tratarErroImagemTcg(this)"
               alt="Carta TCG de ${escaparHtml(carta.nomePt)}"
             >
+            ${seloShiny}
             <span class="carta-tcg-nome">${escaparHtml(carta.nomePt)}</span>
             <span class="carta-tcg-set">${escaparHtml(carta.setPt)}</span>
           </button>
@@ -1585,12 +1587,14 @@
       const raridadeExibicao = idiomaInicial === "pt" ? (carta.raridadePt || carta.raridadeEn) : (carta.raridadeEn || carta.raridadePt);
       const payload = serializarPayloadHtml(carta);
       const avisoSemPt = temVersaoPt ? "" : `<p class="modal-carta-nota">Versão em Português não disponível para esta carta. Exibindo em Inglês.</p>`;
+      const seloShiny = cartaEhEspecialShinyTcg(carta) ? `<span class="modal-carta-selo" aria-label="Carta shiny">★ Shiny</span>` : "";
 
       corpo.innerHTML = `
         <div class="modal-carta-idioma">
           <button type="button" class="idioma-botao ${temVersaoPt ? "ativo" : "inativo"}" onclick="alternarIdiomaCarta('pt', decodeURIComponent('${payload}'))" ${temVersaoPt ? "" : "disabled"}>Português</button>
           <button type="button" class="idioma-botao ${temVersaoPt ? "" : "ativo"}" onclick="alternarIdiomaCarta('en', decodeURIComponent('${payload}'))">Inglês</button>
         </div>
+        ${seloShiny}
         <h3 id="tituloCartaTcg">${escaparHtml(tituloInicial)}</h3>
         <img
           class="modal-carta-imagem"
@@ -1685,6 +1689,63 @@
       document.querySelectorAll(".painel-resultado").forEach(painel => {
         painel.hidden = painel.dataset.painel !== aba;
       });
+
+      if (aba === "tcg") {
+        carregarCartasTcgQuandoNecessario();
+      }
+    }
+
+    async function carregarCartasTcgQuandoNecessario() {
+      if (tcgCartasCarregadas || tcgCarregando || !pokemonAtual) {
+        return;
+      }
+
+      const sequenciaParaCarregar = sequenciaBuscaPokemon;
+      tcgCarregando = true;
+      tcgErroAoCarregar = false;
+
+      const painel = document.getElementById("painelTcgConteudo");
+
+      if (painel) {
+        painel.innerHTML = `
+          <div class="bloco-info bloco-info-sem-borda">
+            <h3>Cartas TCG</h3>
+            <p class="mensagem-tcg">Carregando cartas de ${escaparHtml(nomeExibicaoTcgAtual)}...</p>
+          </div>
+        `;
+      }
+
+      try {
+        const cartas = await buscarCartasTcg(pokemonAtual.name);
+
+        if (sequenciaParaCarregar !== sequenciaBuscaPokemon) {
+          return;
+        }
+
+        cartasTcgAtuais = cartas;
+        cartasTcgFiltradasAtuais = cartas;
+        paginaTcgAtual = 0;
+        tcgCartasCarregadas = true;
+        tcgErroAoCarregar = false;
+        renderizarPainelTcgAtual();
+      } catch {
+        if (sequenciaParaCarregar !== sequenciaBuscaPokemon) {
+          return;
+        }
+
+        tcgErroAoCarregar = true;
+
+        if (painel) {
+          painel.innerHTML = `
+            <div class="bloco-info bloco-info-sem-borda">
+              <h3>Cartas TCG</h3>
+              <p class="mensagem-tcg">Não foi possível carregar as cartas agora. Tente novamente ao abrir a aba Cartas TCG.</p>
+            </div>
+          `;
+        }
+      } finally {
+        tcgCarregando = false;
+      }
     }
 
     async function selecionarPokemon(nome, registrarHistorico = true) {
@@ -1766,35 +1827,23 @@
           velocidade: data.stats.find(stat => stat.stat.name === "speed")?.base_stat ?? "-"
         };
 
-        try {
-          cartasTcg = await buscarCartasTcg(data.name);
+        cartasTcgAtuais = [];
+        cartasTcgFiltradasAtuais = [];
+        paginaTcgAtual = 0;
+        nomeExibicaoTcgAtual = nomeExibicao;
+        tcgCartasCarregadas = false;
+        tcgCarregando = false;
+        tcgErroAoCarregar = false;
 
-          if (sequenciaAtual !== sequenciaBuscaPokemon) {
-            return;
-          }
+        secaoTcgHtml = `
+          <div class="bloco-info bloco-info-sem-borda">
+            <h3>Cartas TCG</h3>
+            <p class="mensagem-tcg">Clique na aba Cartas TCG para carregar as cartas de ${escaparHtml(nomeExibicao)}.</p>
+          </div>
+        `;
 
-          cartasTcgAtuais = cartasTcg;
-          nomeExibicaoTcgAtual = nomeExibicao;
-          cartasTcgFiltradasAtuais = cartasTcgAtuais;
-          atualizarCartasPokemonPorShiny();
-          secaoTcgHtml = renderizarSecaoTcg(
-            obterCartasPaginaAtual(),
-            nomeExibicao,
-            cartasTcgFiltradasAtuais.length,
-            paginaTcgAtual,
-            spriteAtualShiny
-          );
-        } catch {
-          cartasTcgAtuais = [];
-          cartasTcgFiltradasAtuais = [];
-          nomeExibicaoTcgAtual = nomeExibicao;
-          paginaTcgAtual = 0;
-          secaoTcgHtml = `
-            <div class="bloco-info bloco-info-sem-borda">
-              <h3>Cartas TCG</h3>
-              <p class="mensagem-tcg">Não foi possível carregar as cartas agora.</p>
-            </div>
-          `;
+        if (abaResultadoAtual === "tcg") {
+          carregarCartasTcgQuandoNecessario();
         }
 
         if (registrarHistorico) {
@@ -2154,6 +2203,9 @@
         const payload = serializarPayloadHtml(carta);
         const imagemPrincipal = carta.imagemSmallPt || carta.imagemSmallEn || carta.imagemLargePt || carta.imagemLargeEn;
         const imagemFallback = carta.imagemSmallPtPng || carta.imagemSmallEnPng || carta.imagemLargePtPng || carta.imagemLargeEnPng;
+        const seloShiny = cartaEhEspecialShinyTcg(carta)
+          ? `<span class="carta-tcg-selo" aria-label="Carta shiny">★</span>`
+          : "";
 
         return `
           <button
@@ -2172,6 +2224,7 @@
               onerror="tratarErroImagemTcg(this)"
               alt="Carta TCG de ${escaparHtml(carta.nomePt)}"
             >
+            ${seloShiny}
             <span class="carta-tcg-nome">${escaparHtml(carta.nomePt)}</span>
             <span class="carta-tcg-set">${escaparHtml(carta.setPt)}</span>
           </button>

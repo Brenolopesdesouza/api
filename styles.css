@@ -836,6 +836,7 @@ body::after {
   align-items: center;
   gap: 8px;
   cursor: pointer;
+  position: relative;
   transform: perspective(900px) rotateX(var(--rot-x)) rotateY(var(--rot-y));
   transform-style: preserve-3d;
   transition: transform 0.12s ease, box-shadow 0.18s ease;
@@ -864,6 +865,24 @@ body::after {
   font-size: 0.92rem;
   color: #5f6f84;
   transform: translateZ(12px);
+}
+
+.carta-tcg-selo {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #6b5600;
+  background: linear-gradient(180deg, #fff0a6, #ffd84d);
+  box-shadow: 0 8px 14px rgba(19, 35, 59, 0.12);
+  transform: translateZ(18px);
 }
 
 .paginacao-tcg {
@@ -979,6 +998,19 @@ body::after {
   margin: 0 0 16px;
   color: #5f6f84;
   font-size: 0.95rem;
+}
+
+.modal-carta-selo {
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  color: #6b5600;
+  background: linear-gradient(180deg, #fff0a6, #ffd84d);
+  box-shadow: 0 8px 14px rgba(19, 35, 59, 0.12);
 }
 
 #modalCartaCorpo h3 {
