@@ -1,47 +1,4 @@
-Ôªø<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pok√©dex</title>
-  <link rel="icon" type="image/png" href="recursos/images/pokedex.png">
-  <link rel="shortcut icon" href="recursos/images/pokedex.png">
-  <link rel="apple-touch-icon" href="recursos/images/pokedex.png">
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
 
-  <!-- (Opcional) Logo pequena no canto -->
-  <img src="recursos/images/pokedex.png" id="logo" onclick="toggleHistorico()" onkeydown="if(event.key === 'Enter' || event.key === ' '){ event.preventDefault(); toggleHistorico(); }" role="button" tabindex="0" aria-label="Abrir hist√≥rico de pesquisas" alt="Abrir hist√≥rico de pesquisas">
-
-  <!-- Abas de modo principal -->
-  <div class="abas-modo-principal" role="tablist">
-    <button type="button" class="aba-modo-principal ativa" data-modo="pokemon" role="tab" aria-selected="true" onclick="alternarModo('pokemon')">Pok√©dex</button>
-    <button type="button" class="aba-modo-principal" data-modo="pacotes" role="tab" aria-selected="false" onclick="alternarModo('pacotes')">Pacotes TCG</button>
-  </div>
-
-  <!-- SUA LOGO CENTRAL (troque o nome do arquivo aqui) -->
-  <img src="recursos/images/Pokemon-Logo.png" id="logoPrincipal" alt="Logo da Pok√©dex">
-
-  <!-- Campo de busca -->
-  <input type="text" id="busca" placeholder="Digite o nome do Pok√©mon..." oninput="buscarSugestoes()">
-  <input type="text" id="buscaPacote" placeholder="Digite o nome do pacote..." oninput="buscarSugestoesPacotes()" hidden>
-  
-  <div id="sugestoes"></div>
-  <div id="sugestoesPacotes"></div>
-  <div id="historico"></div>
-  <div id="historicoOverlay" onclick="fecharHistorico()"></div>
-
-  <div id="resultado"></div>
-  <div id="modalCarta" class="modal-carta" aria-hidden="true">
-    <div class="modal-carta-overlay" onclick="fecharModalCarta()"></div>
-    <div class="modal-carta-conteudo" role="dialog" aria-modal="true" aria-labelledby="tituloCartaTcg">
-      <button type="button" class="modal-carta-fechar" onclick="fecharModalCarta()" aria-label="Fechar carta">√ó</button>
-      <div id="modalCartaCorpo"></div>
-    </div>
-  </div>
-
-  <script>
     let listaPokemons = [];
     let navegacaoAtual = [];
     let indiceNavegacaoAtual = -1;
@@ -66,13 +23,6 @@
     let cartasTcgFiltradasAtuais = [];
     let paginaTcgAtual = 0;
     let nomeExibicaoTcgAtual = "";
-    let filtrosPacoteTcgAtivos = {
-      tipo: "",
-      raridade: "",
-      subtipo: "",
-      especial: ""
-    };
-    let estadoPacoteTcgAtual = null;
     let listaPokemonsBusca = [];
     let debounceBuscaTimer = null;
     let debounceBuscaPacoteTimer = null;
@@ -86,46 +36,26 @@
     const debounceBuscaMs = 120;
     const debounceBuscaPacoteMs = 220;
     const limiteConcorrenciaTcg = 6;
-    const tiposTcgDisponiveis = [
-      { valor: "Grass", rotulo: "Grama" },
-      { valor: "Fire", rotulo: "Fogo" },
-      { valor: "Water", rotulo: "√Ågua" },
-      { valor: "Lightning", rotulo: "El√©trico" },
-      { valor: "Psychic", rotulo: "Ps√≠quico" },
-      { valor: "Fighting", rotulo: "Lutador" },
-      { valor: "Darkness", rotulo: "Sombrio" },
-      { valor: "Metal", rotulo: "Met√°lico" },
-      { valor: "Fairy", rotulo: "Fada" },
-      { valor: "Dragon", rotulo: "Drag√£o" },
-      { valor: "Colorless", rotulo: "Normal" }
-    ];
-    const filtrosEspeciaisTcgDisponiveis = [
-      { valor: "", rotulo: "Todas" },
-      { valor: "shiny", rotulo: "Shiny" },
-      { valor: "holo", rotulo: "Hologr√°fica" },
-      { valor: "reverse", rotulo: "Reverse Holo" },
-      { valor: "firstEdition", rotulo: "1¬™ edi√ß√£o" }
-    ];
 
     const tiposPT = {
-      fire: { nome: "Fogo", emoji: "üî•" },
-      water: { nome: "√Ågua", emoji: "üíß" },
-      grass: { nome: "Planta", emoji: "üåø" },
-      electric: { nome: "El√©trico", emoji: "‚ö°" },
-      ice: { nome: "Gelo", emoji: "‚ùÑÔ∏è" },
-      fighting: { nome: "Lutador", emoji: "ü•ä" },
-      poison: { nome: "Veneno", emoji: "‚ò†Ô∏è" },
-      ground: { nome: "Terra", emoji: "üåç" },
-      flying: { nome: "Voador", emoji: "ü™Ω" },
-      psychic: { nome: "Ps√≠quico", emoji: "üîÆ" },
-      bug: { nome: "Inseto", emoji: "üêõ" },
-      rock: { nome: "Pedra", emoji: "ü™®" },
-      ghost: { nome: "Fantasma", emoji: "üëª" },
-      dragon: { nome: "Drag√£o", emoji: "üêâ" },
-      dark: { nome: "Sombrio", emoji: "üåë" },
-      steel: { nome: "A√ßo", emoji: "‚öôÔ∏è" },
-      fairy: { nome: "Fada", emoji: "‚ú®" },
-      normal: { nome: "Normal", emoji: "‚ö™" }
+      fire: { nome: "Fogo", emoji: "??" },
+      water: { nome: "¡gua", emoji: "??" },
+      grass: { nome: "Planta", emoji: "??" },
+      electric: { nome: "ElÈtrico", emoji: "?" },
+      ice: { nome: "Gelo", emoji: "??" },
+      fighting: { nome: "Lutador", emoji: "??" },
+      poison: { nome: "Veneno", emoji: "??" },
+      ground: { nome: "Terra", emoji: "??" },
+      flying: { nome: "Voador", emoji: "??" },
+      psychic: { nome: "PsÌquico", emoji: "??" },
+      bug: { nome: "Inseto", emoji: "??" },
+      rock: { nome: "Pedra", emoji: "??" },
+      ghost: { nome: "Fantasma", emoji: "??" },
+      dragon: { nome: "Drag„o", emoji: "??" },
+      dark: { nome: "Sombrio", emoji: "??" },
+      steel: { nome: "AÁo", emoji: "??" },
+      fairy: { nome: "Fada", emoji: "?" },
+      normal: { nome: "Normal", emoji: "?" }
     };
 
     async function carregarLista() {
@@ -209,13 +139,9 @@
         }
 
         return {
-          nomePt: cartaPt?.name || cartaEn.name || "Carta Pok√©mon",
-          nomeEn: cartaEn.name || "Carta Pok√©mon",
+          nomePt: cartaPt?.name || cartaEn.name || "Carta PokÈmon",
+          nomeEn: cartaEn.name || "Carta PokÈmon",
           possuiVersaoPt: Boolean(cartaPt),
-          tipos: cartaPt?.types || cartaEn.types || [],
-          subtipos: cartaPt?.subtypes || cartaEn.subtypes || [],
-          categoria: cartaPt?.category || cartaEn.category || "",
-          variantes: cartaPt?.variants || cartaEn.variants || {},
           imagemSmallPt: montarUrlImagemTcg(cartaPt?.image, "low"),
           imagemLargePt: montarUrlImagemTcg(cartaPt?.image, "high"),
           imagemSmallEn: montarUrlImagemTcg(cartaEn.image, "low"),
@@ -224,10 +150,10 @@
           imagemLargePtPng: montarUrlImagemTcg(cartaPt?.image, "high", "png"),
           imagemSmallEnPng: montarUrlImagemTcg(cartaEn.image, "low", "png"),
           imagemLargeEnPng: montarUrlImagemTcg(cartaEn.image, "high", "png"),
-          setPt: cartaPt?.set?.name || cartaEn.set?.name || "Set n√£o informado",
-          setEn: cartaEn.set?.name || "Set n√£o informado",
-          raridadePt: traduzirRaridadeTcg(cartaPt?.rarity || cartaEn.rarity || "Raridade n√£o informada"),
-          raridadeEn: cartaEn.rarity || "Raridade n√£o informada",
+          setPt: cartaPt?.set?.name || cartaEn.set?.name || "Set n„o informado",
+          setEn: cartaEn.set?.name || "Set n„o informado",
+          raridadePt: traduzirRaridadeTcg(cartaPt?.rarity || cartaEn.rarity || "Raridade n„o informada"),
+          raridadeEn: cartaEn.rarity || "Raridade n„o informada",
           numero: cartaPt?.localId || cartaEn.localId || "-"
         };
       })();
@@ -344,7 +270,7 @@
                 <span class="pokebola-mini pokebola-${sortearPokebola()}"></span>
                 <span>${nome}</span>
               </button>
-            `).join("") : `<p class="historico-vazio">Seu hist√≥rico vai aparecer aqui.</p>`}
+            `).join("") : `<p class="historico-vazio">Seu histÛrico vai aparecer aqui.</p>`}
           </div>
         </div>
       `;
@@ -368,14 +294,14 @@
 
     function traduzirVersaoPokemon(sufixo) {
       const traducoes = {
-        disguised: "Disfar√ßado",
+        disguised: "DisfarÁado",
         busted: "Revelado",
         starter: "Inicial",
         school: "Cardume",
         solo: "Solo",
         ordinary: "Comum",
         resolute: "Resoluto",
-        aria: "√Åria",
+        aria: "¡ria",
         pirouette: "Pirouette",
         attack: "Ataque",
         defense: "Defesa",
@@ -384,43 +310,43 @@
         origin: "Origem",
         altered: "Alterada",
         land: "Terrestre",
-        sky: "C√©u",
+        sky: "CÈu",
         red: "Vermelho",
         blue: "Azul",
         white: "Branco",
         black: "Preto",
-        standard: "Padr√£o",
+        standard: "Padr„o",
         zen: "Zen",
         incarnate: "Encarnada",
         therian: "Therian",
         male: "Macho",
-        female: "F√™mea",
-        average: "M√©dio",
+        female: "FÍmea",
+        average: "MÈdio",
         small: "Pequeno",
         large: "Grande",
         super: "Super",
         meteor: "Meteoro",
-        core: "N√∫cleo",
+        core: "N˙cleo",
         baile: "Baile",
         pompom: "Pompom",
         pau: "Pa'u",
         sensu: "Sensu",
         midday: "Meio-dia",
         midnight: "Meia-noite",
-        dusk: "Crep√∫sculo",
+        dusk: "Crep˙sculo",
         ice: "Gelo",
         noice: "Sem Gelo",
         hangry: "Faminto",
         full: "Completo",
         crown: "Coroa",
-        hero: "Her√≥i",
+        hero: "HerÛi",
         zero: "Zero",
         palafin: "Palafin",
-        aqua: "Aqu√°tico",
+        aqua: "Aqu·tico",
         blaze: "Chama",
         combat: "Combate",
-        rapid: "R√°pido",
-        single: "Golpe √önico",
+        rapid: "R·pido",
+        single: "Golpe ⁄nico",
         strike: "Golpe Decisivo"
       };
 
@@ -513,8 +439,10 @@
         spriteAtualShiny ? "true" : "false"
       );
       botaoShiny.title = spriteAtualShiny
-        ? "Voltar para a vers√£o normal"
-        : "Mostrar vers√£o shiny";
+        ? "Voltar para a vers„o normal"
+        : "Mostrar vers„o shiny";
+
+      atualizarFiltroCartasTcg();
     }
 
     function capitalizarTexto(texto) {
@@ -527,20 +455,20 @@
     function formatarHabilidade(nome) {
       const traducoes = {
         disguise: "Disfarce",
-        cursed_body: "Corpo Amaldi√ßoado",
-        levitate: "Levita√ß√£o",
+        cursed_body: "Corpo AmaldiÁoado",
+        levitate: "LevitaÁ„o",
         overgrow: "Crescer Demais",
         blaze: "Chama",
         torrent: "Torrente",
-        static: "Est√°tica",
+        static: "Est·tica",
         adaptability: "Adaptabilidade",
         synchronize: "Sincronismo",
-        pressure: "Press√£o",
+        pressure: "Press„o",
         sturdy: "Robustez",
-        intimidate: "Intimida√ß√£o",
+        intimidate: "IntimidaÁ„o",
         swarm: "Enxame",
         inner_focus: "Foco Interno",
-        technician: "T√©cnico"
+        technician: "TÈcnico"
       };
 
       const chave = nome.replace(/-/g, "_");
@@ -556,7 +484,7 @@
           )
         )
         .find(Boolean);
-      const texto = entrada?.flavor_text || "Descri√ß√£o n√£o dispon√≠vel.";
+      const texto = entrada?.flavor_text || "DescriÁ„o n„o disponÌvel.";
 
       return {
         idioma: entrada?.language?.name?.toLowerCase() || "",
@@ -566,7 +494,7 @@
 
     async function traduzirComGoogleCloud(texto, idiomaOrigem = "auto", idiomaDestino = "pt") {
       if (!googleTranslateApiKey) {
-        throw new Error("Google Translate API key n√£o configurada.");
+        throw new Error("Google Translate API key n„o configurada.");
       }
 
       const url = `https://translation.googleapis.com/language/translate/v2?key=${googleTranslateApiKey}`;
@@ -609,7 +537,7 @@
 
       const dadosTraducao = await resposta.json();
       if (!Array.isArray(dadosTraducao) || !Array.isArray(dadosTraducao[0])) {
-        throw new Error("Resposta de tradu√ß√£o inv√°lida.");
+        throw new Error("Resposta de traduÁ„o inv·lida.");
       }
 
       return dadosTraducao[0].map(fragmento => fragmento[0]).join("").trim() || texto;
@@ -640,7 +568,7 @@
         });
 
         if (!resposta.ok) {
-          throw new Error("Falha no servi√ßo de tradu√ß√£o padr√£o.");
+          throw new Error("Falha no serviÁo de traduÁ„o padr„o.");
         }
 
         const dadosTraducao = await resposta.json();
@@ -683,7 +611,7 @@
         });
 
         if (!resposta.ok) {
-          throw new Error("Falha no servi√ßo de tradu√ß√£o padr√£o.");
+          throw new Error("Falha no serviÁo de traduÁ„o padr„o.");
         }
 
         const dadosTraducao = await resposta.json();
@@ -813,143 +741,18 @@
         none: "Sem raridade",
         common: "Comum",
         uncommon: "Incomum",
-        rare: "Raro",
-        "double rare": "Duplo raro",
-        "triple rare": "Triplo raro",
-        "ultra rare": "Ultra raro",
+        rare: "Rara",
+        "double rare": "Dupla rara",
+        "triple rare": "Tripla rara",
+        "ultra rare": "Ultra rara",
         "illustration rare": "Rara ilustrada",
         "special illustration rare": "Rara ilustrada especial",
-        "hyper rare": "Hiper raro",
-        "secret rare": "Raro secreto",
-        promo: "Promocional",
-        crown: "Coroa",
-        "one diamond": "Um diamante",
-        "two diamond": "Dois diamantes",
-        "three diamond": "Tr√™s diamantes",
-        "four diamond": "Quatro diamantes",
-        "one star": "Uma estrela",
-        "two star": "Duas estrelas",
-        "three star": "Tr√™s estrelas",
-        shiny: "Shiny",
-        holo: "Hologr√°fica",
-        "reverse holo": "Hologr√°fica reversa"
+        "hyper rare": "Hiper rara",
+        promo: "Promocional"
       };
 
       const chave = String(valor || "").trim().toLowerCase();
       return mapa[chave] || valor;
-    }
-
-    function ehCartaOficialDoSet(cartaBase, totalOficial = 0) {
-      if (!totalOficial) {
-        return true;
-      }
-
-      const localId = String(cartaBase?.localId || "").trim();
-      const numero = Number.parseInt(localId, 10);
-
-      if (!Number.isFinite(numero)) {
-        return true;
-      }
-
-      return numero <= totalOficial;
-    }
-
-    function obterOpcoesRaridadeTcg(cartas) {
-      const mapa = new Map();
-
-      cartas.forEach(carta => {
-        if (!carta?.raridadeEn) {
-          return;
-        }
-
-        if (!mapa.has(carta.raridadeEn)) {
-          mapa.set(carta.raridadeEn, carta.raridadePt || carta.raridadeEn);
-        }
-      });
-
-      return Array.from(mapa.entries())
-        .map(([valor, rotulo]) => ({ valor, rotulo }))
-        .sort((a, b) => a.rotulo.localeCompare(b.rotulo, "pt-BR"));
-    }
-
-    function obterOpcoesSubtipoTcg(cartas) {
-      const mapa = new Map();
-
-      cartas.forEach(carta => {
-        (carta.subtipos || []).forEach(subtipo => {
-          if (!subtipo || mapa.has(subtipo)) {
-            return;
-          }
-
-          mapa.set(subtipo, capitalizarTexto(String(subtipo).replace(/-/g, " ")));
-        });
-      });
-
-      return Array.from(mapa.entries())
-        .map(([valor, rotulo]) => ({ valor, rotulo }))
-        .sort((a, b) => a.rotulo.localeCompare(b.rotulo, "pt-BR"));
-    }
-
-    function existemFiltrosTcgAtivos() {
-      return Object.values(filtrosPacoteTcgAtivos).some(Boolean);
-    }
-
-    function renderizarOpcoesSelectTcg(opcoes, valorAtual, rotuloPadrao) {
-      return [
-        `<option value="">${escaparHtml(rotuloPadrao)}</option>`,
-        ...opcoes.map(opcao => `
-          <option value="${escaparHtml(opcao.valor)}" ${opcao.valor === valorAtual ? "selected" : ""}>
-            ${escaparHtml(opcao.rotulo)}
-          </option>
-        `)
-      ].join("");
-    }
-
-    function renderizarFiltrosTcg() {
-      const cartasBase = estadoPacoteTcgAtual?.cartas || [];
-      const opcoesRaridade = obterOpcoesRaridadeTcg(cartasBase);
-      const opcoesSubtipo = obterOpcoesSubtipoTcg(cartasBase);
-
-      return `
-        <div class="filtros-tcg" role="group" aria-label="Filtros das cartas TCG">
-          <label class="filtro-tcg-campo">
-            <span>Tipo</span>
-            <select onchange="atualizarFiltroTcg('tipo', this.value)">
-              ${renderizarOpcoesSelectTcg(tiposTcgDisponiveis, filtrosPacoteTcgAtivos.tipo, "Todos os tipos")}
-            </select>
-          </label>
-          <label class="filtro-tcg-campo">
-            <span>Raridade</span>
-            <select onchange="atualizarFiltroTcg('raridade', this.value)">
-              ${renderizarOpcoesSelectTcg(opcoesRaridade, filtrosPacoteTcgAtivos.raridade, "Todas as raridades")}
-            </select>
-          </label>
-          <label class="filtro-tcg-campo">
-            <span>Subtipo</span>
-            <select onchange="atualizarFiltroTcg('subtipo', this.value)" ${opcoesSubtipo.length === 0 ? "disabled" : ""}>
-              ${renderizarOpcoesSelectTcg(opcoesSubtipo, filtrosPacoteTcgAtivos.subtipo, opcoesSubtipo.length === 0 ? "Sem subtipos" : "Todos os subtipos")}
-            </select>
-          </label>
-          <label class="filtro-tcg-campo">
-            <span>Especial</span>
-            <select onchange="atualizarFiltroTcg('especial', this.value)">
-              ${filtrosEspeciaisTcgDisponiveis.map(opcao => `
-                <option value="${escaparHtml(opcao.valor)}" ${opcao.valor === filtrosPacoteTcgAtivos.especial ? "selected" : ""}>
-                  ${escaparHtml(opcao.rotulo)}
-                </option>
-              `).join("")}
-            </select>
-          </label>
-          <button
-            type="button"
-            class="filtro-tcg-limpar"
-            onclick="limparFiltrosTcg()"
-            ${existemFiltrosTcgAtivos() ? "" : "disabled"}
-          >
-            Limpar filtros
-          </button>
-        </div>
-      `;
     }
 
     function efeito3dCarta(evento, elemento) {
@@ -1157,72 +960,13 @@
       return campos.some(campo => marcadores.some(marcador => campo.includes(marcador)));
     }
 
-    function cartaCombinaComFiltrosTcg(carta) {
-      if (filtrosPacoteTcgAtivos.tipo && !(carta.tipos || []).includes(filtrosPacoteTcgAtivos.tipo)) {
-        return false;
-      }
-
-      if (filtrosPacoteTcgAtivos.raridade && carta.raridadeEn !== filtrosPacoteTcgAtivos.raridade) {
-        return false;
-      }
-
-      if (filtrosPacoteTcgAtivos.subtipo && !(carta.subtipos || []).includes(filtrosPacoteTcgAtivos.subtipo)) {
-        return false;
-      }
-
-      if (filtrosPacoteTcgAtivos.especial === "shiny" && !cartaEhEspecialShinyTcg(carta)) {
-        return false;
-      }
-
-      if (filtrosPacoteTcgAtivos.especial === "holo" && !carta.variantes?.holo) {
-        return false;
-      }
-
-      if (filtrosPacoteTcgAtivos.especial === "reverse" && !carta.variantes?.reverse) {
-        return false;
-      }
-
-      if (filtrosPacoteTcgAtivos.especial === "firstEdition" && !carta.variantes?.firstEdition) {
-        return false;
-      }
-
-      return true;
-    }
-
     function atualizarFiltroCartasTcg() {
-      if (!estadoPacoteTcgAtual) {
-        return;
-      }
+      const usarShiny = spriteAtualShiny;
+      const cartasShiny = cartasTcgAtuais.filter(cartaEhEspecialShinyTcg);
+      cartasTcgFiltradasAtuais = usarShiny ? cartasShiny : cartasTcgAtuais;
 
-      estadoPacoteTcgAtual.cartasFiltradas = estadoPacoteTcgAtual.cartas.filter(cartaCombinaComFiltrosTcg);
-      estadoPacoteTcgAtual.paginaAtual = 0;
-      renderizarPainelPacoteTcgAtual();
-    }
-
-    function atualizarFiltroTcg(campo, valor) {
-      filtrosPacoteTcgAtivos[campo] = valor;
-      atualizarFiltroCartasTcg();
-    }
-
-    function limparFiltrosTcg() {
-      filtrosPacoteTcgAtivos = {
-        tipo: "",
-        raridade: "",
-        subtipo: "",
-        especial: ""
-      };
-
-      atualizarFiltroCartasTcg();
-    }
-
-    function renderizarPainelPacoteTcgAtual() {
-      const resultado = document.getElementById("resultado");
-
-      if (!resultado || !estadoPacoteTcgAtual) {
-        return;
-      }
-
-      resultado.innerHTML = renderizarPacoteResultado(estadoPacoteTcgAtual);
+      paginaTcgAtual = 0;
+      renderizarPainelTcgAtual();
     }
 
     function obterCartasPaginaAtual() {
@@ -1370,19 +1114,19 @@
               class="paginacao-tcg-botao"
               onclick="navegarPaginaTcg(-1)"
               ${paginaAtual <= 0 ? "disabled" : ""}
-              aria-label="P√°gina anterior das cartas"
+              aria-label="P·gina anterior das cartas"
             >
-              ‚Üê
+              ?
             </button>
-            <span class="paginacao-tcg-info">P√°gina ${paginaAtual + 1} de ${Math.max(1, Math.ceil(totalCartas / 6))}</span>
+            <span class="paginacao-tcg-info">P·gina ${paginaAtual + 1} de ${Math.max(1, Math.ceil(totalCartas / 6))}</span>
             <button
               type="button"
               class="paginacao-tcg-botao"
               onclick="navegarPaginaTcg(1)"
               ${paginaAtual >= Math.ceil(totalCartas / 6) - 1 ? "disabled" : ""}
-              aria-label="Pr√≥xima p√°gina das cartas"
+              aria-label="PrÛxima p·gina das cartas"
             >
-              ‚Üí
+              ?
             </button>
           </div>
         </div>
@@ -1397,23 +1141,16 @@
       }
 
       const setDetalhe = await buscarJson(`${endpointTcg}/en/sets/${setId}`);
-      const totalOficial = setDetalhe.cardCount?.official || 0;
-      const cartasBase = Array.isArray(setDetalhe.cards)
-        ? setDetalhe.cards.filter(cartaBase => ehCartaOficialDoSet(cartaBase, totalOficial))
-        : [];
+      const cartasBase = Array.isArray(setDetalhe.cards) ? setDetalhe.cards : [];
 
       const cartasDetalhadas = await mapearComLimite(cartasBase, limiteConcorrenciaTcg, async cartaBase => {
         try {
           return await buscarDetalhesCartaTcg(cartaBase.id);
         } catch {
           return {
-            nomePt: cartaBase.name || "Carta Pok√©mon",
-            nomeEn: cartaBase.name || "Carta Pok√©mon",
+            nomePt: cartaBase.name || "Carta PokÈmon",
+            nomeEn: cartaBase.name || "Carta PokÈmon",
             possuiVersaoPt: false,
-            tipos: cartaBase.types || [],
-            subtipos: cartaBase.subtypes || [],
-            categoria: cartaBase.category || "",
-            variantes: cartaBase.variants || {},
             imagemSmallPt: "",
             imagemLargePt: "",
             imagemSmallEn: montarUrlImagemTcg(cartaBase.image, "low"),
@@ -1422,20 +1159,16 @@
             imagemLargePtPng: "",
             imagemSmallEnPng: montarUrlImagemTcg(cartaBase.image, "low", "png"),
             imagemLargeEnPng: montarUrlImagemTcg(cartaBase.image, "high", "png"),
-            setPt: "Set n√£o informado",
-            setEn: "Set n√£o informado",
-            raridadePt: "Raridade n√£o informada",
-            raridadeEn: "Raridade n√£o informada",
+            setPt: "Set n„o informado",
+            setEn: "Set n„o informado",
+            raridadePt: "Raridade n„o informada",
+            raridadeEn: "Raridade n„o informada",
             numero: cartaBase.localId || "-"
           };
         }
       });
 
-      const resultado = {
-        set: setDetalhe,
-        cartas: cartasDetalhadas,
-        totalOficial
-      };
+      const resultado = { set: setDetalhe, cartas: cartasDetalhadas };
       cacheCartasPacoteTcg.set(chave, resultado);
       return resultado;
     }
@@ -1452,12 +1185,12 @@
       const setExibicao = idiomaInicial === "pt" ? (carta.setPt || carta.setEn) : (carta.setEn || carta.setPt);
       const raridadeExibicao = idiomaInicial === "pt" ? (carta.raridadePt || carta.raridadeEn) : (carta.raridadeEn || carta.raridadePt);
       const payload = serializarPayloadHtml(carta);
-      const avisoSemPt = temVersaoPt ? "" : `<p class="modal-carta-nota">Vers√£o em Portugu√™s n√£o dispon√≠vel para esta carta. Exibindo em Ingl√™s.</p>`;
+      const avisoSemPt = temVersaoPt ? "" : `<p class="modal-carta-nota">Vers„o em PortuguÍs n„o disponÌvel para esta carta. Exibindo em InglÍs.</p>`;
 
       corpo.innerHTML = `
         <div class="modal-carta-idioma">
-          <button type="button" class="idioma-botao ${temVersaoPt ? "ativo" : "inativo"}" onclick="alternarIdiomaCarta('pt', decodeURIComponent('${payload}'))" ${temVersaoPt ? "" : "disabled"}>Portugu√™s</button>
-          <button type="button" class="idioma-botao ${temVersaoPt ? "" : "ativo"}" onclick="alternarIdiomaCarta('en', decodeURIComponent('${payload}'))">Ingl√™s</button>
+          <button type="button" class="idioma-botao ${temVersaoPt ? "ativo" : "inativo"}" onclick="alternarIdiomaCarta('pt', decodeURIComponent('${payload}'))" ${temVersaoPt ? "" : "disabled"}>PortuguÍs</button>
+          <button type="button" class="idioma-botao ${temVersaoPt ? "" : "ativo"}" onclick="alternarIdiomaCarta('en', decodeURIComponent('${payload}'))">InglÍs</button>
         </div>
         <h3 id="tituloCartaTcg">${escaparHtml(tituloInicial)}</h3>
         <img
@@ -1475,7 +1208,7 @@
         <div class="modal-carta-meta">
           <p><strong>Set:</strong> <span data-campo="set">${escaparHtml(setExibicao)}</span></p>
           <p><strong>Raridade:</strong> <span data-campo="raridade">${escaparHtml(raridadeExibicao)}</span></p>
-          <p><strong>N√∫mero:</strong> ${escaparHtml(carta.numero)}</p>
+          <p><strong>N˙mero:</strong> ${escaparHtml(carta.numero)}</p>
         </div>
       `;
 
@@ -1518,7 +1251,7 @@
         : (carta.raridadeEn || carta.raridadePt);
 
       botoes.forEach(botao => {
-        const ativo = botao.textContent === (emPortugues ? "Portugu√™s" : "Ingl√™s");
+        const ativo = botao.textContent === (emPortugues ? "PortuguÍs" : "InglÍs");
         botao.classList.toggle("ativo", ativo);
       });
     }
@@ -1591,7 +1324,7 @@
         let secaoTcgHtml = `
           <div class="bloco-info bloco-info-sem-borda">
             <h3>Cartas TCG</h3>
-            <p class="mensagem-tcg">N√£o foi poss√≠vel carregar as cartas agora.</p>
+            <p class="mensagem-tcg">N„o foi possÌvel carregar as cartas agora.</p>
           </div>
         `;
         pokemonAtual = data;
@@ -1602,7 +1335,7 @@
         nomeExibicaoTcgAtual = nomeExibicao;
 
         if (
-          descricaoOriginal.texto !== "Descri√ß√£o n√£o dispon√≠vel." &&
+          descricaoOriginal.texto !== "DescriÁ„o n„o disponÌvel." &&
           !["pt", "pt-br"].includes(descricaoOriginal.idioma)
         ) {
           try {
@@ -1660,7 +1393,7 @@
           secaoTcgHtml = `
             <div class="bloco-info bloco-info-sem-borda">
               <h3>Cartas TCG</h3>
-              <p class="mensagem-tcg">N√£o foi poss√≠vel carregar as cartas agora.</p>
+              <p class="mensagem-tcg">N„o foi possÌvel carregar as cartas agora.</p>
             </div>
           `;
         }
@@ -1677,9 +1410,9 @@
               class="evolucao-seta"
               onclick="navegarEvolucao(-1)"
               ${indiceNavegacaoAtual <= 0 ? "disabled" : ""}
-              aria-label="Evolu√ß√£o anterior"
+              aria-label="EvoluÁ„o anterior"
             >
-              ‚Üê
+              ?
             </button>
 
             <h2>${numero} - ${nomeExibicao}</h2>
@@ -1689,9 +1422,9 @@
               class="evolucao-seta"
               onclick="navegarEvolucao(1)"
               ${indiceNavegacaoAtual === -1 || indiceNavegacaoAtual >= navegacaoAtual.length - 1 ? "disabled" : ""}
-              aria-label="Pr√≥xima evolu√ß√£o"
+              aria-label="PrÛxima evoluÁ„o"
             >
-              ‚Üí
+              ?
             </button>
           </div>
 
@@ -1703,54 +1436,54 @@
               class="botao-shiny ${data.sprites.front_shiny ? "" : "desabilitado"}"
               onclick="alternarShiny()"
               ${data.sprites.front_shiny ? "" : "disabled"}
-              aria-label="Alternar vers√£o shiny"
+              aria-label="Alternar vers„o shiny"
               aria-pressed="false"
-              title="${data.sprites.front_shiny ? "Mostrar vers√£o shiny" : "Vers√£o shiny indispon√≠vel"}"
+              title="${data.sprites.front_shiny ? "Mostrar vers„o shiny" : "Vers„o shiny indisponÌvel"}"
             >
-              ‚òÖ Shiny
+              ? Shiny
             </button>
           </div>
 
-          <div class="abas-resultado" role="tablist" aria-label="Alternar entre informa√ß√µes e cartas TCG">
-            <button type="button" class="aba-resultado ativa" data-aba="informacoes" role="tab" aria-selected="true" onclick="alternarAbaResultado('informacoes')">Informa√ß√µes</button>
+          <div class="abas-resultado" role="tablist" aria-label="Alternar entre informaÁıes e cartas TCG">
+            <button type="button" class="aba-resultado ativa" data-aba="informacoes" role="tab" aria-selected="true" onclick="alternarAbaResultado('informacoes')">InformaÁıes</button>
             <button type="button" class="aba-resultado" data-aba="tcg" role="tab" aria-selected="false" onclick="alternarAbaResultado('tcg')">Cartas TCG</button>
           </div>
 
           <div class="painel-resultado" data-painel="informacoes">
             <div class="bloco-info bloco-info-sem-borda">
-              <h3>Descri√ß√£o</h3>
+              <h3>DescriÁ„o</h3>
               <p class="descricao-pokemon">${descricaoPokemon}</p>
             </div>
 
             <div class="bloco-info">
-              <h3>Informa√ß√µes b√°sicas</h3>
+              <h3>InformaÁıes b·sicas</h3>
               <p><strong>Tipo:</strong> ${tiposFormatados}</p>
               <p><strong>Habilidades:</strong> ${habilidadesFormatadas.join(", ")}</p>
-              <p>‚öñÔ∏è <strong>Peso:</strong> ${pesoKg} kg</p>
-              <p>üìè <strong>Altura:</strong> ${alturaCm} cm</p>
+              <p>?? <strong>Peso:</strong> ${pesoKg} kg</p>
+              <p>?? <strong>Altura:</strong> ${alturaCm} cm</p>
             </div>
 
             <div class="bloco-info">
               <h3>Status base</h3>
               <div class="grade-status">
-                <div class="status-item"><span>‚ù§Ô∏è HP</span><strong>${stats.hp}</strong></div>
-                <div class="status-item"><span>‚öîÔ∏è Ataque</span><strong>${stats.ataque}</strong></div>
-                <div class="status-item"><span>üõ°Ô∏è Defesa</span><strong>${stats.defesa}</strong></div>
-                <div class="status-item"><span>‚ú® Atq. Esp.</span><strong>${stats.ataqueEspecial}</strong></div>
-                <div class="status-item"><span>üî∞ Def. Esp.</span><strong>${stats.defesaEspecial}</strong></div>
-                <div class="status-item"><span>üí® Velocidade</span><strong>${stats.velocidade}</strong></div>
+                <div class="status-item"><span>?? HP</span><strong>${stats.hp}</strong></div>
+                <div class="status-item"><span>?? Ataque</span><strong>${stats.ataque}</strong></div>
+                <div class="status-item"><span>??? Defesa</span><strong>${stats.defesa}</strong></div>
+                <div class="status-item"><span>? Atq. Esp.</span><strong>${stats.ataqueEspecial}</strong></div>
+                <div class="status-item"><span>?? Def. Esp.</span><strong>${stats.defesaEspecial}</strong></div>
+                <div class="status-item"><span>?? Velocidade</span><strong>${stats.velocidade}</strong></div>
               </div>
             </div>
 
             <div class="bloco-info">
-              <h3>Fraquezas e resist√™ncias</h3>
+              <h3>Fraquezas e resistÍncias</h3>
               <div class="grupo-relacao">
                 <span class="titulo-relacao">Fraquezas</span>
                 <div class="chips-linha">${renderizarListaChips(relacoesDeDano.fraquezas, "chip-vazio", "Nenhuma fraqueza relevante")}</div>
               </div>
               <div class="grupo-relacao">
-                <span class="titulo-relacao">Resist√™ncias</span>
-                <div class="chips-linha">${renderizarListaChips(relacoesDeDano.resistencias, "chip-vazio", "Nenhuma resist√™ncia relevante")}</div>
+                <span class="titulo-relacao">ResistÍncias</span>
+                <div class="chips-linha">${renderizarListaChips(relacoesDeDano.resistencias, "chip-vazio", "Nenhuma resistÍncia relevante")}</div>
               </div>
               <div class="grupo-relacao">
                 <span class="titulo-relacao">Imunidades</span>
@@ -1768,14 +1501,14 @@
           return;
         }
 
-        document.getElementById("resultado").innerHTML = "‚ùå Pok√©mon n√£o encontrado!";
+        document.getElementById("resultado").innerHTML = "? PokÈmon n„o encontrado!";
       }
     }
 
     function alternarModo(modo) {
       modoAtual = modo;
 
-      // Fechar sugest√µes e hist√≥rico
+      // Fechar sugestıes e histÛrico
       document.getElementById("sugestoes").innerHTML = "";
       document.getElementById("sugestoesPacotes").innerHTML = "";
       fecharHistorico();
@@ -1795,14 +1528,7 @@
         campoBuscaPacote.hidden = true;
         document.getElementById("sugestoes").hidden = false;
         document.getElementById("sugestoesPacotes").hidden = true;
-        estadoPacoteTcgAtual = null;
-        filtrosPacoteTcgAtivos = {
-          tipo: "",
-          raridade: "",
-          subtipo: "",
-          especial: ""
-        };
-        // Limpar campos e sugest√µes de pacote
+        // Limpar campos e sugestıes de pacote
         campoBuscaPacote.value = "";
         document.getElementById("sugestoesPacotes").innerHTML = "";
         // Limpar resultado anterior
@@ -1812,19 +1538,13 @@
         campoBuscaPacote.hidden = false;
         document.getElementById("sugestoes").hidden = true;
         document.getElementById("sugestoesPacotes").hidden = false;
-        filtrosPacoteTcgAtivos = {
-          tipo: "",
-          raridade: "",
-          subtipo: "",
-          especial: ""
-        };
-        // Limpar campos e sugest√µes de pokemon
+        // Limpar campos e sugestıes de pokemon
         campoBuscaPokemon.value = "";
         document.getElementById("sugestoes").innerHTML = "";
         resultado.innerHTML = `
           <div class="painel-pacotes-tcg">
             <p style="text-align: center; margin-top: 32px; color: #5f6f84;">
-              Digite o nome de um pacote TCG para come√ßar a busca.
+              Digite o nome de um pacote TCG para comeÁar a busca.
             </p>
           </div>
         `;
@@ -1897,7 +1617,7 @@
       try {
         const pacotesMap = new Map(); // ID -> { pt: pacotePT, en: pacoteEN }
         
-        // Primeiro buscar em portugu√™s (prioridade)
+        // Primeiro buscar em portuguÍs (prioridade)
         try {
           for (const idioma of ['pt-br', 'pt']) {
             try {
@@ -1925,7 +1645,7 @@
           }
         } catch {}
         
-        // Depois buscar em ingl√™s para completar dados faltantes
+        // Depois buscar em inglÍs para completar dados faltantes
         try {
           const query = new URLSearchParams({
             name: consulta,
@@ -1945,7 +1665,7 @@
           }
         } catch {}
         
-        // Retornar pacotes com nome em portugu√™s (ou ingl√™s se n√£o houver PT)
+        // Retornar pacotes com nome em portuguÍs (ou inglÍs se n„o houver PT)
         const resultado = Array.from(pacotesMap.values())
           .map(({ pt, en }) => pt || en)
           .filter(p => p !== null && p !== undefined)
@@ -1973,13 +1693,6 @@
 
       document.getElementById("buscaPacote").value = nomePacote;
       document.getElementById("sugestoesPacotes").innerHTML = "";
-      filtrosPacoteTcgAtivos = {
-        tipo: "",
-        raridade: "",
-        subtipo: "",
-        especial: ""
-      };
-      estadoPacoteTcgAtual = null;
 
       try {
         const setDetalhe = await buscarCartasPacoteTcg(setId);
@@ -1988,15 +1701,7 @@
           return;
         }
 
-        estadoPacoteTcgAtual = {
-          set: setDetalhe.set,
-          cartas: setDetalhe.cartas,
-          cartasFiltradas: setDetalhe.cartas,
-          paginaAtual: 0,
-          totalOficial: setDetalhe.totalOficial || setDetalhe.set.cardCount?.official || setDetalhe.cartas.length,
-          nomePacote
-        };
-        resultado.innerHTML = renderizarPacoteResultado(estadoPacoteTcgAtual);
+        resultado.innerHTML = renderizarPacoteResultado(setDetalhe, nomePacote);
       } catch {
         if (sequenciaAtual !== sequenciaSelecaoPacote) {
           return;
@@ -2004,99 +1709,101 @@
 
         resultado.innerHTML = `
           <div style="padding: 32px 20px; text-align: center;">
-            <p style="color: #d62828;">N√£o foi poss√≠vel carregar o pacote.</p>
+            <p style="color: #d62828;">N„o foi possÌvel carregar o pacote.</p>
           </div>
         `;
       }
     }
 
-    function renderizarPacoteResultado({ set, cartas, cartasFiltradas, paginaAtual, totalOficial }) {
+    function renderizarPacoteResultado({ set, cartas }, nomePacote) {
       const itensPorPagina = 6;
-      const listaFiltrada = Array.isArray(cartasFiltradas) ? cartasFiltradas : cartas;
-      const totalBase = totalOficial || cartas.length;
-      const totalPaginas = Math.ceil(listaFiltrada.length / itensPorPagina);
-      const inicio = paginaAtual * itensPorPagina;
-      const cartasPagina = listaFiltrada.slice(inicio, inicio + itensPorPagina);
+      const totalPaginas = Math.ceil(cartas.length / itensPorPagina);
 
-      const cartasHtml = cartasPagina.map(carta => {
-        const payload = serializarPayloadHtml(carta);
-        const imagemPrincipal = carta.imagemSmallPt || carta.imagemSmallEn || carta.imagemLargePt || carta.imagemLargeEn;
-        const imagemFallback = carta.imagemSmallPtPng || carta.imagemSmallEnPng || carta.imagemLargePtPng || carta.imagemLargeEnPng;
+      // Armazenar estado global para navegaÁ„o
+      window.paginaPacoteAtual = 0;
+      window.setAtualPacote = set;
+      window.cartasAtualPacote = cartas;
+
+      function renderizarCartasPagina() {
+        const paginaAtual = window.paginaPacoteAtual || 0;
+        const inicio = paginaAtual * itensPorPagina;
+        const cartasPagina = cartas.slice(inicio, inicio + itensPorPagina);
+
+        const cartasHtml = cartasPagina.map(carta => {
+          const payload = serializarPayloadHtml(carta);
+          const imagemPrincipal = carta.imagemSmallPt || carta.imagemSmallEn || carta.imagemLargePt || carta.imagemLargeEn;
+          const imagemFallback = carta.imagemSmallPtPng || carta.imagemSmallEnPng || carta.imagemLargePtPng || carta.imagemLargeEnPng;
+
+          return `
+            <button
+              type="button"
+              class="carta-tcg-item"
+              onclick="abrirModalCarta(decodeURIComponent('${payload}'))"
+              onmousemove="efeito3dCarta(event, this)"
+              onmouseleave="resetarEfeito3dCarta(this)"
+              aria-label="Abrir carta ${escaparHtml(carta.nomePt)}"
+            >
+              <img
+                src="${escaparHtml(imagemPrincipal)}"
+                data-fallback-png="${escaparHtml(imagemFallback)}"
+                onerror="tratarErroImagemTcg(this)"
+                alt="Carta TCG de ${escaparHtml(carta.nomePt)}"
+              >
+              <span class="carta-tcg-nome">${escaparHtml(carta.nomePt)}</span>
+              <span class="carta-tcg-set">${escaparHtml(carta.setPt)}</span>
+            </button>
+          `;
+        }).join("");
 
         return `
-          <button
-            type="button"
-            class="carta-tcg-item"
-            onclick="abrirModalCarta(decodeURIComponent('${payload}'))"
-            onmousemove="efeito3dCarta(event, this)"
-            onmouseleave="resetarEfeito3dCarta(this)"
-            aria-label="Abrir carta ${escaparHtml(carta.nomePt)}"
-          >
-            <img
-              src="${escaparHtml(imagemPrincipal)}"
-              data-fallback-png="${escaparHtml(imagemFallback)}"
-              onerror="tratarErroImagemTcg(this)"
-              alt="Carta TCG de ${escaparHtml(carta.nomePt)}"
-            >
-            <span class="carta-tcg-nome">${escaparHtml(carta.nomePt)}</span>
-            <span class="carta-tcg-set">${escaparHtml(carta.setPt)}</span>
-          </button>
-        `;
-      }).join("");
-
-      return `
-        <div class="bloco-info bloco-info-sem-borda">
-          <div class="topo-tcg">
-            <div>
-              <h3>${escaparHtml(set.name)}</h3>
-              <p style="margin: 0; font-size: 0.9rem; color: #5f6f84;">
-                ${set.releaseDate ? new Date(set.releaseDate).toLocaleDateString("pt-BR") : "Data desconhecida"}
-              </p>
+          <div class="bloco-info bloco-info-sem-borda">
+            <div class="topo-tcg">
+              <div>
+                <h3>${escaparHtml(set.name)}</h3>
+                <p style="margin: 0; font-size: 0.9rem; color: #5f6f84;">
+                  ${set.releaseDate ? new Date(set.releaseDate).toLocaleDateString("pt-BR") : "Data desconhecida"}
+                </p>
+              </div>
+              <span class="contador-tcg">${cartas.length} cartas</span>
             </div>
-            <span class="contador-tcg">${listaFiltrada.length !== totalBase ? `${listaFiltrada.length} de ${totalBase} cartas` : `${totalBase} cartas`}</span>
+            <div class="grade-cartas-tcg">${cartasHtml}</div>
+            <div class="paginacao-tcg" ${totalPaginas <= 1 ? "style='display:none;'" : ""}>
+              <button
+                type="button"
+                class="paginacao-tcg-botao"
+                onclick="navegarPaginaPacote(-1)"
+                ${paginaAtual <= 0 ? "disabled" : ""}
+              >
+                ?
+              </button>
+              <span class="paginacao-tcg-info">P·gina ${paginaAtual + 1} de ${totalPaginas}</span>
+              <button
+                type="button"
+                class="paginacao-tcg-botao"
+                onclick="navegarPaginaPacote(1)"
+                ${paginaAtual >= totalPaginas - 1 ? "disabled" : ""}
+              >
+                ?
+              </button>
+            </div>
           </div>
-          ${cartas.length > 0 ? renderizarFiltrosTcg() : ""}
-          ${cartasPagina.length > 0 ? `<div class="grade-cartas-tcg">${cartasHtml}</div>` : `<p class="mensagem-tcg">Nenhuma carta corresponde aos filtros selecionados.</p>`}
-          <div class="paginacao-tcg" ${totalPaginas <= 1 ? "style='display:none;'" : ""}>
-            <button
-              type="button"
-              class="paginacao-tcg-botao"
-              onclick="navegarPaginaPacote(-1)"
-              ${paginaAtual <= 0 ? "disabled" : ""}
-            >
-              ‚Üê
-            </button>
-            <span class="paginacao-tcg-info">P√°gina ${paginaAtual + 1} de ${Math.max(1, totalPaginas)}</span>
-            <button
-              type="button"
-              class="paginacao-tcg-botao"
-              onclick="navegarPaginaPacote(1)"
-              ${paginaAtual >= totalPaginas - 1 ? "disabled" : ""}
-            >
-              ‚Üí
-            </button>
-          </div>
-        </div>
-      `;
-    }
-
-    function navegarPaginaPacote(direcao) {
-      if (!estadoPacoteTcgAtual) {
-        return;
+        `;
       }
 
-      const totalPaginas = Math.ceil(estadoPacoteTcgAtual.cartasFiltradas.length / 6);
-      const proximaPagina = estadoPacoteTcgAtual.paginaAtual + direcao;
+      window.navegarPaginaPacote = function(direcao) {
+        const totalPaginas = Math.ceil(cartas.length / itensPorPagina);
+        const proximaPagina = (window.paginaPacoteAtual || 0) + direcao;
 
-      if (proximaPagina < 0 || proximaPagina >= totalPaginas) {
+        if (proximaPagina < 0 || proximaPagina >= totalPaginas) {
           return;
-      }
+        }
 
-      estadoPacoteTcgAtual.paginaAtual = proximaPagina;
-      renderizarPainelPacoteTcgAtual();
+        window.paginaPacoteAtual = proximaPagina;
+        const resultado = document.getElementById("resultado");
+        resultado.innerHTML = renderizarCartasPagina();
+      };
+
+      return renderizarCartasPagina();
     }
 
-  </script>
-
-</body>
-</html>
+  
